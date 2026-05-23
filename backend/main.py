@@ -37,6 +37,9 @@ from pydantic import BaseModel
 from utils.document_processor import extract_text
 from utils.metadata_extractor  import extract_metadata
 from utils.chunker              import chunk_text
+from utils.paper_catalog        import upsert_paper as catalog_upsert_paper
+from utils.paper_catalog        import list_papers as catalog_list_papers
+from utils.paper_catalog        import delete_paper as catalog_delete_paper
 from utils.graph_store          import GraphStore
 from utils.vector_store         import VectorStore
 from utils.llm                  import chat_with_paper, summarize_paper
@@ -159,11 +162,16 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
         result["warning"] = " ".join(warnings)
         result["message"] = "Document ingested with warnings."
 
+    catalog_upsert_paper(result)
+
     return result
 
 
 @app.get("/papers")
 def list_papers() -> list[dict]:
+    papers = catalog_list_papers()
+    if papers:
+        return papers
     return graph.list_papers()
 
 
@@ -179,6 +187,7 @@ def get_paper(paper_id: str) -> dict:
 def delete_paper(paper_id: str) -> dict:
     graph.delete_paper(paper_id)
     vector.delete_paper_chunks(paper_id)
+    catalog_delete_paper(paper_id)
     return {"message": "Paper deleted", "paper_id": paper_id}
 
 

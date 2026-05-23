@@ -136,7 +136,7 @@ class GraphStore:
                     pid=paper_id,
                 )
 
-                self._run_write(_write)
+                    self._run_write(_write)
         return paper_id
 
     # ── Register chunk ───────────────────────────────────────────
