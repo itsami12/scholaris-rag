@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Optional
 
 HISTORY_DIR = Path(os.getenv("HISTORY_DIR", "chat_history"))
-HISTORY_DIR.mkdir(exist_ok=True)
+HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_CONTEXT_TURNS = 10          # how many prior turns to send to the LLM
 TITLE_MAX_CHARS   = 60
