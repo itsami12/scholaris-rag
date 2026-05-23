@@ -74,14 +74,27 @@ def embed_query(query: str) -> list[float]:
 
 class VectorStore:
     def __init__(self) -> None:
-        self._client = QdrantClient(
-            url=QDRANT_URL,
-            api_key=QDRANT_API_KEY,
-            timeout=60,
-        )
-        self._ensure_collection()
+        self._client = None
+        self._available = True
+
+        try:
+            self._client = QdrantClient(
+                url=QDRANT_URL,
+                api_key=QDRANT_API_KEY,
+                timeout=60,
+            )
+            self._ensure_collection()
+        except Exception as exc:
+            self._mark_unavailable(exc)
+
+    def _mark_unavailable(self, exc: Exception) -> None:
+        if self._available:
+            print(f"Qdrant unavailable; vector features disabled for this session: {exc}")
+        self._available = False
 
     def _ensure_collection(self) -> None:
+        if not self._available or self._client is None:
+            return
         existing = [c.name for c in self._client.get_collections().collections]
         if QDRANT_COLLECTION not in existing:
             self._client.create_collection(
@@ -99,6 +112,9 @@ class VectorStore:
         batch_size: int = 32,
     ) -> list[str]:
         """Embed and upsert all chunks. Returns list of chunk_ids."""
+        if not self._available or self._client is None:
+            return []
+
         chunk_ids: list[str] = []
         points: list[PointStruct] = []
 
@@ -149,6 +165,9 @@ class VectorStore:
         paper_id: str | None = None,
     ) -> list[dict[str, Any]]:
         """Semantic search. Optionally filter by paper_id."""
+        if not self._available or self._client is None:
+            return []
+
         q_vec = embed_query(query)
 
         query_filter = None
@@ -188,6 +207,9 @@ class VectorStore:
     # ── Delete by paper ───────────────────────────────────────────
 
     def delete_paper_chunks(self, paper_id: str) -> None:
+        if not self._available or self._client is None:
+            return
+
         self._client.delete(
             collection_name=QDRANT_COLLECTION,
             points_selector=Filter(
