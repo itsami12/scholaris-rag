@@ -39,6 +39,7 @@ from utils.metadata_extractor  import extract_metadata
 from utils.chunker              import chunk_text
 from utils.paper_catalog        import upsert_paper as catalog_upsert_paper
 from utils.paper_catalog        import list_papers as catalog_list_papers
+from utils.paper_catalog        import get_paper as catalog_get_paper
 from utils.paper_catalog        import delete_paper as catalog_delete_paper
 from utils.graph_store          import GraphStore
 from utils.vector_store         import VectorStore
@@ -179,6 +180,8 @@ def list_papers() -> list[dict]:
 def get_paper(paper_id: str) -> dict:
     paper = graph.get_paper(paper_id)
     if not paper:
+        paper = catalog_get_paper(paper_id) or {}
+    if not paper:
         raise HTTPException(404, "Paper not found")
     return paper
 
@@ -243,6 +246,8 @@ def chat(req: ChatRequest) -> ChatResponse:
 @app.post("/summarize/{paper_id}")
 def summarize(paper_id: str) -> dict:
     paper = graph.get_paper(paper_id)
+    if not paper:
+        paper = catalog_get_paper(paper_id) or {}
     if not paper:
         raise HTTPException(404, "Paper not found")
     summary = summarize_paper(
