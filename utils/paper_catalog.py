@@ -62,6 +62,13 @@ def upsert_paper(record: dict[str, Any]) -> dict[str, Any]:
         return stored
 
 
+def find_paper_by_hash(file_hash: str) -> dict[str, Any] | None:
+    for item in _read_all():
+        if item.get("file_hash") == file_hash:
+            return item
+    return None
+
+
 def list_papers() -> list[dict[str, Any]]:
     records = _read_all()
     return sorted(records, key=lambda item: item.get("uploaded_at", ""), reverse=True)

@@ -26,6 +26,7 @@ Misc
 from __future__ import annotations
 
 import uuid
+import hashlib
 from pathlib import Path
 from typing import Optional
 
@@ -40,6 +41,7 @@ from utils.chunker              import chunk_text
 from utils.paper_catalog        import upsert_paper as catalog_upsert_paper
 from utils.paper_catalog        import list_papers as catalog_list_papers
 from utils.paper_catalog        import get_paper as catalog_get_paper
+from utils.paper_catalog        import find_paper_by_hash as catalog_find_paper_by_hash
 from utils.paper_catalog        import delete_paper as catalog_delete_paper
 from utils.graph_store          import GraphStore
 from utils.vector_store         import VectorStore
@@ -110,6 +112,14 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
     if len(content) > 50 * 1024 * 1024:
         raise HTTPException(413, "File too large (max 50 MB)")
 
+    file_hash = hashlib.sha256(content).hexdigest()
+    existing = catalog_find_paper_by_hash(file_hash)
+    if existing:
+        raise HTTPException(
+            409,
+            f"Document already ingested: {existing.get('title', 'Unknown')} ({existing.get('paper_id')})",
+        )
+
     try:
         full_text, page_texts, doc_type = extract_text(content, file.filename)
     except Exception as exc:
@@ -148,6 +158,7 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
 
     result = {
         "paper_id":    paper_id,
+        "file_hash":   file_hash,
         "title":       metadata.title,
         "authors":     metadata.authors,
         "year":        metadata.year,
@@ -227,11 +238,16 @@ def chat(req: ChatRequest) -> ChatResponse:
     if history and history[-1]["role"] == "user":
         history = history[:-1]
 
-    # Retrieve relevant chunks
-    chunks = vector.search(req.query, top_k=6, paper_id=req.paper_id)
+    try:
+        # Retrieve relevant chunks
+        chunks = vector.search(req.query, top_k=6, paper_id=req.paper_id)
 
-    # Generate answer
-    answer = chat_with_paper(req.query, chunks, history=history)
+        # Generate answer
+        answer = chat_with_paper(req.query, chunks, history=history)
+    except RuntimeError as exc:
+        raise HTTPException(503, str(exc))
+    except Exception as exc:
+        raise HTTPException(500, f"Chat failed: {exc}")
 
     # Persist assistant message (with sources)
     add_message(session_id, "assistant", answer, sources=chunks)
