@@ -113,7 +113,7 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
         raise HTTPException(413, "File too large (max 50 MB)")
 
     file_hash = hashlib.sha256(content).hexdigest()
-    existing = catalog_find_paper_by_hash(file_hash)
+    existing = graph.find_paper_by_hash(file_hash) or catalog_find_paper_by_hash(file_hash)
     if existing:
         raise HTTPException(
             409,
@@ -137,7 +137,7 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
     warnings: list[str] = []
 
     try:
-        graph.upsert_paper(paper_id, metadata)
+        graph.upsert_paper(paper_id, metadata, file_hash=file_hash)
     except Exception as exc:
         warnings.append(f"Graph store unavailable: {exc}")
 

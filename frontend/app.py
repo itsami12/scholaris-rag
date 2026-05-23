@@ -175,11 +175,15 @@ def api(method: str, path: str, timeout: int = 120, retries: int = 6, **kwargs):
             st.error("⚠️ Cannot connect to Scholaris backend yet. Please wait a few seconds and refresh.")
             return None
         except requests.exceptions.HTTPError as e:
+            status = getattr(e.response, "status_code", None)
             detail = ""
             try:
                 detail = e.response.json().get("detail", "")
             except Exception:
                 pass
+            if status == 409:
+                st.warning(f"{detail or 'Document already ingested.'}")
+                return None
             st.error(f"API error: {e} — {detail}")
             return None
 

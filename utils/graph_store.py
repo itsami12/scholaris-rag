@@ -72,7 +72,7 @@ class GraphStore:
 
     # ── Upsert paper ─────────────────────────────────────────────
 
-    def upsert_paper(self, paper_id: str, metadata: PaperMetadata) -> str:
+    def upsert_paper(self, paper_id: str, metadata: PaperMetadata, file_hash: str | None = None) -> str:
         def _write(session):
             # Paper node
             session.run(
@@ -83,7 +83,8 @@ class GraphStore:
                     p.doi        = $doi,
                     p.abstract   = $abstract,
                     p.page_count = $page_count,
-                    p.filename   = $filename
+                    p.filename   = $filename,
+                    p.file_hash  = coalesce($file_hash, p.file_hash)
                 """,
                 pid=paper_id,
                 title=metadata.title,
@@ -92,6 +93,7 @@ class GraphStore:
                 abstract=metadata.abstract[:500],
                 page_count=metadata.page_count,
                 filename=metadata.filename,
+                file_hash=file_hash,
             )
 
             # Authors
@@ -139,6 +141,33 @@ class GraphStore:
 
         self._run_write(_write)
         return paper_id
+
+    def find_paper_by_hash(self, file_hash: str) -> dict[str, Any]:
+        def _read(session):
+            result = session.run(
+                """
+                MATCH (p:Paper {file_hash: $file_hash})
+                OPTIONAL MATCH (p)-[:AUTHORED_BY]->(a:Author)
+                OPTIONAL MATCH (p)-[:HAS_KEYWORD]->(k:Keyword)
+                OPTIONAL MATCH (p)-[:PUBLISHED_IN]->(j:Journal)
+                RETURN p,
+                       collect(DISTINCT a.name) AS authors,
+                       collect(DISTINCT k.value) AS keywords,
+                       j.name AS journal
+                LIMIT 1
+                """,
+                file_hash=file_hash,
+            )
+            row = result.single()
+            if not row:
+                return {}
+            p = dict(row["p"])
+            p["authors"] = row["authors"]
+            p["keywords"] = row["keywords"]
+            p["journal"] = row["journal"]
+            return p
+
+        return self._run_read(_read, {})
 
     # ── Register chunk ───────────────────────────────────────────
 
