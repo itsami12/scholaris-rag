@@ -10,13 +10,14 @@
 |---|---|
 | **Frontend** | Streamlit |
 | **Backend** | FastAPI |
+| **Deployment** | Hugging Face Spaces (Docker) |
+| **Containerization** | Docker |
 | **LLM** | Groq (`llama-3.3-70b-versatile`) |
 | **Embeddings** | Nomic (`nomic-embed-text-v1.5`) |
 | **Vector DB** | Qdrant Cloud |
 | **Graph DB** | Neo4j Aura |
 | **OCR** | OCR.Space API (for scanned PDFs) |
 | **PDF parsing** | PyMuPDF |
-
 ---
 
 ## 🚀 Quick Start
