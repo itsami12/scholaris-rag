@@ -50,6 +50,14 @@ streamlit run frontend/app.py
 ```
 
 ---
+---
+
+## 🌐 Live Demo
+
+👉 Hugging Face Space:  
+https://huggingface.co/spaces/itsami12/scholaris
+
+---
 
 ## 🗂️ Project Structure
 
