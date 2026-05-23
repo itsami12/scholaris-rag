@@ -1,10 +1,10 @@
-# 🔬 Scholaris — AI Research Paper Chatbot
+﻿# ≡ƒö¼ Scholaris ΓÇö AI Research Paper Chatbot
 
-> Upload research papers · Chat with context-aware AI · Explore with a knowledge graph · Export your conversations
+> Upload research papers ┬╖ Chat with context-aware AI ┬╖ Explore with a knowledge graph ┬╖ Export your conversations
 
 ---
 
-## 📦 Tech Stack
+## ≡ƒôª Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -19,7 +19,7 @@
 
 ---
 
-## 🚀 Quick Start
+## ≡ƒÜÇ Quick Start
 
 ### 1. Install dependencies
 ```bash
@@ -42,14 +42,14 @@ bash run.sh
 
 ### Or run manually
 ```bash
-# Terminal 1 — Backend
+# Terminal 1 ΓÇö Backend
 uvicorn backend.main:app --reload
 
-# Terminal 2 — Frontend
+# Terminal 2 ΓÇö Frontend
 streamlit run frontend/app.py
 ```
 
-## 🚀 Deploy on Render
+## ≡ƒÜÇ Deploy on Render
 
 This repo is set up for two Render web services:
 
@@ -82,7 +82,7 @@ Set these environment variables in Render:
 
 The repo now includes [\.env.example](.env.example) as a template for both local development and Render settings.
 
-## 🤗 Deploy both frontend and backend in one Hugging Face Space
+## ≡ƒñù Deploy both frontend and backend in one Hugging Face Space
 
 Use a **Docker Space**. The container starts the FastAPI backend on `127.0.0.1:8000` and Streamlit on Hugging Face's public port `7860`.
 
@@ -110,61 +110,61 @@ Use a **Docker Space**. The container starts the FastAPI backend on `127.0.0.1:8
 
 ---
 
-## 🗂️ Project Structure
+## ≡ƒùé∩╕Å Project Structure
 
 ```
 scholaris/
-├── backend/
-│   └── main.py              FastAPI app — all endpoints
-├── frontend/
-│   └── app.py               Streamlit UI
-├── utils/
-│   ├── document_processor.py  PDF/DOCX/TXT extraction + OCR
-│   ├── metadata_extractor.py  Title, authors, DOI, keywords…
-│   ├── chunker.py             Overlapping text chunker
-│   ├── graph_store.py         Neo4j: Paper/Author/Keyword nodes
-│   ├── vector_store.py        Qdrant: embeddings + search
-│   ├── llm.py                 Groq: RAG chat + summarization
-│   └── history_manager.py     Session persistence + export
-├── chat_history/              Auto-created; JSON session files
-├── config.py                  Centralized env var loader
-├── requirements.txt
-├── .env                       API keys & config
-└── run.sh                     One-command startup
+Γö£ΓöÇΓöÇ backend/
+Γöé   ΓööΓöÇΓöÇ main.py              FastAPI app ΓÇö all endpoints
+Γö£ΓöÇΓöÇ frontend/
+Γöé   ΓööΓöÇΓöÇ app.py               Streamlit UI
+Γö£ΓöÇΓöÇ utils/
+Γöé   Γö£ΓöÇΓöÇ document_processor.py  PDF/DOCX/TXT extraction + OCR
+Γöé   Γö£ΓöÇΓöÇ metadata_extractor.py  Title, authors, DOI, keywordsΓÇª
+Γöé   Γö£ΓöÇΓöÇ chunker.py             Overlapping text chunker
+Γöé   Γö£ΓöÇΓöÇ graph_store.py         Neo4j: Paper/Author/Keyword nodes
+Γöé   Γö£ΓöÇΓöÇ vector_store.py        Qdrant: embeddings + search
+Γöé   Γö£ΓöÇΓöÇ llm.py                 Groq: RAG chat + summarization
+Γöé   ΓööΓöÇΓöÇ history_manager.py     Session persistence + export
+Γö£ΓöÇΓöÇ chat_history/              Auto-created; JSON session files
+Γö£ΓöÇΓöÇ config.py                  Centralized env var loader
+Γö£ΓöÇΓöÇ requirements.txt
+Γö£ΓöÇΓöÇ .env                       API keys & config
+ΓööΓöÇΓöÇ run.sh                     One-command startup
 ```
 
 ---
 
-## 📋 Pipeline
+## ≡ƒôï Pipeline
 
 ```
 Upload Document (PDF / DOCX / TXT)
-        ↓
+        Γåô
 Document Type Detection
-        ↓
-Scanned PDF? → OCR.Space API
-Else        → PyMuPDF
-        ↓
+        Γåô
+Scanned PDF? ΓåÆ OCR.Space API
+Else        ΓåÆ PyMuPDF
+        Γåô
 Text Cleaning & Chunking (800 tokens, 150 overlap)
-        ↓
+        Γåô
 Metadata Extraction (title, authors, journal, DOI, year, keywords)
-        ↓
-Neo4j Aura  ← Paper, Author, Keyword, Journal nodes + relationships
-        ↓
+        Γåô
+Neo4j Aura  ΓåÉ Paper, Author, Keyword, Journal nodes + relationships
+        Γåô
 Nomic Embeddings (nomic-embed-text-v1.5, dim=768)
-        ↓
-Qdrant Cloud ← chunk vectors + metadata payload
-        ↓
-User Query → vector search → top-6 chunks retrieved
-        ↓
-Groq LLM (llama-3.3-70b) + conversation history → answer
-        ↓
+        Γåô
+Qdrant Cloud ΓåÉ chunk vectors + metadata payload
+        Γåô
+User Query ΓåÆ vector search ΓåÆ top-6 chunks retrieved
+        Γåô
+Groq LLM (llama-3.3-70b) + conversation history ΓåÆ answer
+        Γåô
 Session saved to chat_history/<id>.json
 ```
 
 ---
 
-## 💬 Chat History Features
+## ≡ƒÆ¼ Chat History Features
 
 | Feature | Description |
 |---|---|
@@ -179,7 +179,7 @@ Session saved to chat_history/<id>.json
 
 ---
 
-## 🔌 API Reference
+## ≡ƒöî API Reference
 
 ### Documents
 | Method | Path | Description |
@@ -208,7 +208,7 @@ Session saved to chat_history/<id>.json
 
 ---
 
-## 📝 Chat Request Format
+## ≡ƒô¥ Chat Request Format
 
 ```json
 POST /chat
