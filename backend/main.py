@@ -120,15 +120,29 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
         raise HTTPException(422, "Document produced no text chunks.")
 
     paper_id   = str(uuid.uuid4())
-    graph.upsert_paper(paper_id, metadata)
+    warnings: list[str] = []
+
+    try:
+        graph.upsert_paper(paper_id, metadata)
+    except Exception as exc:
+        warnings.append(f"Graph store unavailable: {exc}")
 
     meta_dict  = metadata.to_dict()
-    chunk_ids  = vector.upsert_chunks(chunks, paper_id, meta_dict)
+    chunk_ids: list[str] = []
+    try:
+        chunk_ids = vector.upsert_chunks(chunks, paper_id, meta_dict)
+    except Exception as exc:
+        warnings.append(f"Vector store unavailable: {exc}")
 
-    for chunk, cid in zip(chunks, chunk_ids):
-        graph.register_chunk(paper_id, cid, chunk.chunk_index, chunk.page_hint)
+    if chunk_ids:
+        for chunk, cid in zip(chunks, chunk_ids):
+            try:
+                graph.register_chunk(paper_id, cid, chunk.chunk_index, chunk.page_hint)
+            except Exception as exc:
+                warnings.append(f"Chunk graph registration skipped: {exc}")
+                break
 
-    return {
+    result = {
         "paper_id":    paper_id,
         "title":       metadata.title,
         "authors":     metadata.authors,
@@ -140,6 +154,12 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
         "doc_type":    doc_type,
         "message":     "Document ingested successfully.",
     }
+
+    if warnings:
+        result["warning"] = " ".join(warnings)
+        result["message"] = "Document ingested with warnings."
+
+    return result
 
 
 @app.get("/papers")
