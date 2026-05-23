@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import io
 import json
+import time
 from datetime import datetime
 
 import requests
@@ -156,24 +157,35 @@ hr { border-color: #1e2235 !important; }
 # API helpers
 # ─────────────────────────────────────────────────────────────────
 
-def api(method: str, path: str, timeout: int = 120, **kwargs):
+def api(method: str, path: str, timeout: int = 120, retries: int = 6, **kwargs):
     url = f"{BACKEND_URL}{path}"
-    try:
-        resp = getattr(requests, method)(url, timeout=timeout, **kwargs)
-        resp.raise_for_status()
-        ct = resp.headers.get("content-type", "")
-        return resp.text if "text/plain" in ct else resp.json()
-    except requests.exceptions.ConnectionError:
-        st.error("⚠️ Cannot connect to Scholaris backend. Start it with: `uvicorn backend.main:app --reload`")
-        return None
-    except requests.exceptions.HTTPError as e:
-        detail = ""
+    last_error = None
+
+    for attempt in range(retries + 1):
         try:
-            detail = e.response.json().get("detail", "")
-        except Exception:
-            pass
-        st.error(f"API error: {e} — {detail}")
-        return None
+            resp = getattr(requests, method)(url, timeout=timeout, **kwargs)
+            resp.raise_for_status()
+            ct = resp.headers.get("content-type", "")
+            return resp.text if "text/plain" in ct else resp.json()
+        except requests.exceptions.ConnectionError as exc:
+            last_error = exc
+            if attempt < retries:
+                time.sleep(1 + attempt)
+                continue
+            st.error("⚠️ Cannot connect to Scholaris backend yet. Please wait a few seconds and refresh.")
+            return None
+        except requests.exceptions.HTTPError as e:
+            detail = ""
+            try:
+                detail = e.response.json().get("detail", "")
+            except Exception:
+                pass
+            st.error(f"API error: {e} — {detail}")
+            return None
+
+    if last_error:
+        st.error("⚠️ Cannot connect to Scholaris backend yet. Please wait a few seconds and refresh.")
+    return None
 
 
 # ─────────────────────────────────────────────────────────────────
