@@ -46,9 +46,15 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
         "texts": texts,
         "task_type": "search_document",
     }
-    resp = requests.post(url, json=payload, headers=headers, timeout=60)
-    resp.raise_for_status()
-    return resp.json()["embeddings"]
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=60)
+        resp.raise_for_status()
+        return resp.json()["embeddings"]
+    except requests.HTTPError as exc:
+        status = getattr(exc.response, "status_code", None)
+        if status == 403:
+            raise RuntimeError("Nomic API rejected the request (403). Check NOMIC_API_KEY.") from exc
+        raise RuntimeError(f"Nomic embedding request failed: {exc}") from exc
 
 
 def embed_query(query: str) -> list[float]:
@@ -63,9 +69,15 @@ def embed_query(query: str) -> list[float]:
         "texts": [query],
         "task_type": "search_query",
     }
-    resp = requests.post(url, json=payload, headers=headers, timeout=30)
-    resp.raise_for_status()
-    return resp.json()["embeddings"][0]
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=30)
+        resp.raise_for_status()
+        return resp.json()["embeddings"][0]
+    except requests.HTTPError as exc:
+        status = getattr(exc.response, "status_code", None)
+        if status == 403:
+            raise RuntimeError("Nomic API rejected the query embed request (403). Check NOMIC_API_KEY.") from exc
+        raise RuntimeError(f"Nomic query embedding failed: {exc}") from exc
 
 
 # ─────────────────────────────────────────────────────────────────

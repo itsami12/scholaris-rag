@@ -80,14 +80,16 @@ def chat_with_paper(
             + messages[1:]    # current user message with context
         )
 
-    completion = _client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=messages,
-        temperature=0.3,
-        max_tokens=1500,
-    )
-
-    return completion.choices[0].message.content
+    try:
+        completion = _client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            temperature=0.3,
+            max_tokens=1500,
+        )
+        return completion.choices[0].message.content
+    except Exception as exc:
+        raise RuntimeError(f"Groq chat request failed: {exc}") from exc
 
 
 def summarize_paper(abstract: str, title: str) -> str:
@@ -97,13 +99,16 @@ def summarize_paper(abstract: str, title: str) -> str:
         "Provide a clear 3-bullet summary of this paper covering: "
         "(1) Problem addressed, (2) Approach/Method, (3) Key findings/contributions."
     )
-    completion = _client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.2,
-        max_tokens=400,
-    )
-    return completion.choices[0].message.content
+    try:
+        completion = _client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=400,
+        )
+        return completion.choices[0].message.content
+    except Exception as exc:
+        raise RuntimeError(f"Groq summary request failed: {exc}") from exc

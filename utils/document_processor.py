@@ -54,6 +54,11 @@ def _ocr_space(file_bytes: bytes, filename: str) -> str:
             raise RuntimeError(result.get("ErrorMessage", "OCR.Space error"))
         pages = result.get("ParsedResults", [])
         return "\n\n".join(p["ParsedText"] for p in pages if p.get("ParsedText"))
+    except requests.HTTPError as exc:
+        status = getattr(exc.response, "status_code", None)
+        if status == 403:
+            raise RuntimeError("OCR.Space rejected the request (403). Check OCR_SPACE_API_KEY.") from exc
+        raise RuntimeError(f"OCR.Space failed: {exc}") from exc
     except Exception as exc:
         raise RuntimeError(f"OCR.Space failed: {exc}") from exc
 
