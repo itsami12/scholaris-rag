@@ -21,6 +21,7 @@ OCR_SPACE_API_KEY = os.getenv("OCR_SPACE_API_KEY", "")
 NEO4J_URI      = os.getenv("NEO4J_URI", "")
 NEO4J_USERNAME = os.getenv("NEO4J_USERNAME", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "")
+NEO4J_DATABASE  = os.getenv("NEO4J_DATABASE", "neo4j")
 
 # Nomic
 NOMIC_API_KEY = os.getenv("NOMIC_API_KEY", "")

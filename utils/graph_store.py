@@ -11,12 +11,13 @@ from typing import Any
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError, ServiceUnavailable, SessionExpired
 
-from config import NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
+from config import NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD, NEO4J_DATABASE
 from utils.metadata_extractor import PaperMetadata
 
 
 class GraphStore:
     def __init__(self) -> None:
+        self._database = NEO4J_DATABASE.strip() or None
         self._driver = GraphDatabase.driver(
             NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
         )
@@ -34,7 +35,7 @@ class GraphStore:
         if not self._available:
             return
         try:
-            with self._driver.session() as session:
+            with self._driver.session(database=self._database) as session:
                 callback(session)
         except (ServiceUnavailable, SessionExpired, Neo4jError) as exc:
             self._mark_unavailable(exc)
@@ -43,7 +44,7 @@ class GraphStore:
         if not self._available:
             return default
         try:
-            with self._driver.session() as session:
+            with self._driver.session(database=self._database) as session:
                 return callback(session)
         except (ServiceUnavailable, SessionExpired, Neo4jError) as exc:
             self._mark_unavailable(exc)
