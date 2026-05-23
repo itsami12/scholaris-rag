@@ -8,7 +8,6 @@ __pycache__/
 .venv/
 venv/
 env/
-.streamlit/
 .ipynb_checkpoints/
 chat_history/*.json
 chat_history/*.md
