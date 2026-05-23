@@ -15,6 +15,7 @@ from qdrant_client.http.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    PayloadSchemaType,
 )
 
 from config import (
@@ -113,6 +114,11 @@ class VectorStore:
                 collection_name=QDRANT_COLLECTION,
                 vectors_config=VectorParams(size=EMBEDDING_DIM, distance=Distance.COSINE),
             )
+        self._client.create_payload_index(
+            collection_name=QDRANT_COLLECTION,
+            field_name="paper_id",
+            field_schema=PayloadSchemaType.KEYWORD,
+        )
 
     # ── Upsert chunks ─────────────────────────────────────────────
 
