@@ -49,6 +49,65 @@ uvicorn backend.main:app --reload
 streamlit run frontend/app.py
 ```
 
+## 🚀 Deploy on Render
+
+This repo is set up for two Render web services:
+
+1. `scholaris-backend` runs the FastAPI app.
+2. `scholaris-frontend` runs the Streamlit app.
+
+Use the included [render.yaml](render.yaml) blueprint, or create the services manually with these start commands:
+
+```bash
+# Backend
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+
+# Frontend
+streamlit run frontend/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+```
+
+Set these environment variables in Render:
+
+| Variable | Service | Notes |
+|---|---|---|
+| `OCR_SPACE_API_KEY` | Backend | Required for scanned PDFs |
+| `NEO4J_URI` | Backend | Neo4j Aura URI |
+| `NEO4J_USERNAME` | Backend | Neo4j username |
+| `NEO4J_PASSWORD` | Backend | Neo4j password |
+| `NOMIC_API_KEY` | Backend | Nomic embeddings key |
+| `QDRANT_URL` | Backend | Qdrant Cloud URL |
+| `QDRANT_API_KEY` | Backend | Qdrant Cloud API key |
+| `GROQ_API_KEY` | Backend | Groq API key |
+| `BACKEND_URL` | Frontend | Set to your backend service URL, for example `https://scholaris-backend.onrender.com` |
+
+The repo now includes [\.env.example](.env.example) as a template for both local development and Render settings.
+
+## 🤗 Deploy both frontend and backend in one Hugging Face Space
+
+Use a **Docker Space**. The container starts the FastAPI backend on `127.0.0.1:8000` and Streamlit on Hugging Face's public port `7860`.
+
+### Steps
+1. Create a new Space on Hugging Face.
+2. Choose **Docker** as the SDK.
+3. Connect this GitHub repo.
+4. Let Spaces build from the included [Dockerfile](Dockerfile).
+5. Add these secrets in the Space settings:
+   - `OCR_SPACE_API_KEY`
+   - `NEO4J_URI`
+   - `NEO4J_USERNAME`
+   - `NEO4J_PASSWORD`
+   - `NOMIC_API_KEY`
+   - `QDRANT_URL`
+   - `QDRANT_API_KEY`
+   - `GROQ_API_KEY`
+6. If you enable persistent storage, set `HISTORY_DIR` to `/data/chat_history`.
+7. Deploy the Space and use the public Space URL, for example `https://your-name-scholaris.hf.space`.
+
+### Important
+- You do not need a separate `BACKEND_URL` for the Space itself because the frontend talks to the backend on `http://127.0.0.1:8000` inside the same container.
+- The container must expose only the Streamlit app publicly on port `7860`.
+- Without persistent storage, chat history resets when the Space restarts.
+
 ---
 
 ## 🗂️ Project Structure

@@ -25,12 +25,13 @@ Structure of a session file:
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-HISTORY_DIR = Path("chat_history")
+HISTORY_DIR = Path(os.getenv("HISTORY_DIR", "chat_history"))
 HISTORY_DIR.mkdir(exist_ok=True)
 
 MAX_CONTEXT_TURNS = 10          # how many prior turns to send to the LLM
